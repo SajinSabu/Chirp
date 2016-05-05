@@ -35,7 +35,6 @@ public class MainDAO {
         resources = res;
         // Read and write data from Firebase database
         firebaseRef = new Firebase(resources.getString(R.string.firebase_url));
-        Log.d("Testing", "test");
     }
 
     public Firebase getFirebase() {

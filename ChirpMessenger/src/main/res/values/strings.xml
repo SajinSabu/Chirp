@@ -5,8 +5,9 @@
     <string name="login_activity_label">Chirp Messaging</string>
     <string name="username">USERNAME</string>
     <string name="password">PASSWORD</string>
+    <string name="logout">LOGOUT</string>
     <string name="message_elipses">Message...</string>
 
-    <string name="firebase_url">https://luminous-inferno-7577.firebaseio.com/</string>
+    <string name="firebase_url">https://luminous-inferno-7577.firebaseio.com</string>
 
 </resources>

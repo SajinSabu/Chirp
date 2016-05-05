@@ -24,9 +24,6 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     private EditText usernameField;
     private EditText passwordField;
 
-    private String username;
-    private String password;
-
     private Intent intent;
     private Intent serviceIntent;
     private Intent signupIntent;
@@ -41,6 +38,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        intent = new Intent(getApplicationContext(), ListUsersActivity.class);
         serviceIntent = new Intent(getApplicationContext(), MessageService.class);
         signupIntent = new Intent(getApplicationContext(), SignupActivity.class);
         chirpFirebaseRef = MainDAO.getInstance().getFirebase();
