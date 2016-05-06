@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
-            android:text="@string/username"
+            android:text="@string/email"
             android:id="@+id/loginUsernameText"
             android:layout_gravity="center_horizontal"
             android:textColor="@color/chirp_blue"
