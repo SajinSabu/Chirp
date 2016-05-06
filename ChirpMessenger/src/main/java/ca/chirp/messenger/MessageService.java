@@ -4,8 +4,13 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.sinch.android.rtc.ClientRegistration;
 import com.sinch.android.rtc.Sinch;
 import com.sinch.android.rtc.SinchClient;
@@ -24,22 +29,43 @@ public class MessageService extends Service implements SinchClientListener {
     private final MessageServiceInterface serviceInterface = new MessageServiceInterface();
     private SinchClient sinchClient = null;
     private MessageClient messageClient = null;
+    private LocalBroadcastManager broadcaster;
+    private Intent broadcastIntent = new Intent("ca.chirp.messenger.ListUsersActivity");
     private String currentUserId;
-    private UserDAO userDAO;
-    private Firebase messageFirebaseRef;
+
+    private static String LOG_TAG = "USER_ACTIVITY";
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        messageFirebaseRef = MainDAO.getInstance().getFirebase();
-        userDAO = new UserDAO();
+        Firebase messageFirebaseRef = MainDAO.getInstance().getFirebase();
+        UserDAO userDAO = new UserDAO();
         // Get the current user id from Firebase
         AuthData authData = messageFirebaseRef.getAuth();
-        currentUserId = userDAO.getUserRef(authData.getUid()).toString();
-        if (currentUserId != null && !isSinchClientStarted()) {
-            startSinchClient(currentUserId);
-        }
+        Firebase userRef = userDAO.getUserRef(authData.getUid());
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Check if there is data at the database location
+                if (dataSnapshot.exists()) {
+                    currentUserId = dataSnapshot.getValue(UserModel.class).getName();
+                    Log.e(LOG_TAG, "Got Display Name VALUE " + currentUserId);
+                    if (currentUserId != null && !isSinchClientStarted()) {
+                        startSinchClient(currentUserId);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.e(LOG_TAG, "Error trying to get current user data" + firebaseError.getMessage());
+            }
+        });
+
+        broadcaster = LocalBroadcastManager.getInstance(this);
         return super.onStartCommand(intent, flags, startId);
     }
+
     public void startSinchClient(String username) {
         sinchClient = Sinch.getSinchClientBuilder()
                 .context(this)
@@ -60,28 +86,37 @@ public class MessageService extends Service implements SinchClientListener {
     private boolean isSinchClientStarted() {
         return sinchClient != null && sinchClient.isStarted();
     }
-    //The next 5 methods are for the sinch client listener
     @Override
     public void onClientFailed(SinchClient client, SinchError error) {
         sinchClient = null;
+        broadcastIntent.putExtra("success", false);
+        broadcaster.sendBroadcast(broadcastIntent);
     }
+
     @Override
     public void onClientStarted(SinchClient client) {
         client.startListeningOnActiveConnection();
         messageClient = client.getMessageClient();
+        broadcastIntent.putExtra("success", true);
+        broadcaster.sendBroadcast(broadcastIntent);
     }
+
     @Override
     public void onClientStopped(SinchClient client) {
         sinchClient = null;
     }
+
     @Override
     public void onRegistrationCredentialsRequired(SinchClient client, ClientRegistration clientRegistration) {}
+
     @Override
     public void onLogMessage(int level, String area, String message) {}
+
     @Override
     public IBinder onBind(Intent intent) {
         return serviceInterface;
     }
+
     public void sendMessage(String recipientUserId, String textBody) {
         if (messageClient != null) {
             WritableMessage message = new WritableMessage(recipientUserId, textBody);
@@ -103,6 +138,7 @@ public class MessageService extends Service implements SinchClientListener {
         sinchClient.stopListeningOnActiveConnection();
         sinchClient.terminate();
     }
+
     //public interface for ListUsersActivity & MessagingActivity
     public class MessageServiceInterface extends Binder {
         public void sendMessage(String recipientUserId, String textBody) {

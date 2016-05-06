@@ -122,4 +122,10 @@ public class LoginActivity extends Activity implements View.OnClickListener {
         startService(serviceIntent);
     }
 
+    @Override
+    public void onDestroy() {
+        stopService(new Intent(this, MessageService.class));
+        super.onDestroy();
+    }
+
 }
