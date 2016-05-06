@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -19,7 +20,9 @@ import com.firebase.client.AuthData;
 import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
 import com.firebase.client.Query;
+import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +40,8 @@ public class ListUsersActivity extends Activity {
     private BroadcastReceiver receiver = null;
 
     private Firebase myFirebaseRef;
+
+    private static String LOG_TAG = "LIST_USERS";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,15 +67,55 @@ public class ListUsersActivity extends Activity {
     private void setConversationsList() {
         UserDAO userDAO = new UserDAO();
         AuthData authData = myFirebaseRef.getAuth();
-        currentUserId = userDAO.getUserRef(authData.getUid()).child("/displayName").equalTo("displayName").toString();
+
+        // Get the current user id from Firebase
+        Firebase userRef = userDAO.getUserRef(authData.getUid());
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Check if there is data at the database location
+                if (dataSnapshot.exists()) {
+                    currentUserId = dataSnapshot.getValue(UserModel.class).getName();
+                }
+            }
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.e(LOG_TAG, "Error trying to get current user data" + firebaseError.getMessage());
+            }
+        });
+
         names = new ArrayList<String>();
 
         // Order alphabetical order
         Query query = userDAO.getRef().orderByChild("displayName");
 
-        // Don't include yourself in the list
-        // Try to change this somehow...
-        query.equalTo("displayName", currentUserId);
+        Log.e(LOG_TAG, "Count " + currentUserId);
+        query.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Log.e(LOG_TAG, "Count " + snapshot.getChildrenCount());
+                for (DataSnapshot userSnapshot: snapshot.getChildren()) {
+                    String s = userSnapshot.getValue(UserModel.class).getName();
+                    if (s.equals(currentUserId)){
+                        // Don't add to list
+                    }
+                    else {
+                        names.add(s);
+                    }
+                }
+
+                usersListView = (ListView)findViewById(R.id.usersListView);
+                namesArrayAdapter =
+                        new ArrayAdapter<String>(getApplicationContext(),
+                                R.layout.user_list_item, names);
+                usersListView.setAdapter(namesArrayAdapter);
+            }
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.e("The read failed: " ,firebaseError.getMessage());
+            }
+        });
 
     }
 
@@ -93,6 +138,12 @@ public class ListUsersActivity extends Activity {
         };
 
         LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("ca.chirp.messenger.ListUsersActivity"));
+    }
+
+    @Override
+    public void onResume() {
+        setConversationsList();
+        super.onResume();
     }
 
 }
