@@ -28,6 +28,9 @@
             android:name="ca.chirp.messenger.ListUsersActivity"
             android:screenOrientation="portrait">
         </activity>
+        <activity android:name="ca.chirp.messenger.MessagingActivity"
+            android:screenOrientation="portrait">
+        </activity>
         <service android:name="ca.chirp.messenger.MessageService"
             android:enabled="true"
             android:exported="true" ></service>

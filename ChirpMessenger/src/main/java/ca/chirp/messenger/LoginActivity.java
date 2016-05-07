@@ -107,7 +107,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Check if there is data at the database location
                 if (dataSnapshot.exists()) {
-                    Log.i(LOG_TAG, "Data Exists " + dataSnapshot.getValue(UserModel.class).getName());
+                    Log.i(LOG_TAG, "Data Exists " + dataSnapshot.getValue(UserModel.class).getEmail());
                     MainDAO.setCurrentUser(dataSnapshot.getValue(UserModel.class));
                 }
             }

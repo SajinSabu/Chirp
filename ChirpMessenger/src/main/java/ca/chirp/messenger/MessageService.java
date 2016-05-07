@@ -48,8 +48,8 @@ public class MessageService extends Service implements SinchClientListener {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 // Check if there is data at the database location
                 if (dataSnapshot.exists()) {
-                    currentUserId = dataSnapshot.getValue(UserModel.class).getName();
-                    Log.e(LOG_TAG, "Got Display Name VALUE " + currentUserId);
+                    currentUserId = dataSnapshot.getValue(UserModel.class).getEmail();
+                    Log.e(LOG_TAG, "Got Display email VALUE " + currentUserId);
                     if (currentUserId != null && !isSinchClientStarted()) {
                         startSinchClient(currentUserId);
                     }
