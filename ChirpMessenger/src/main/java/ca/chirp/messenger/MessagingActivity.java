@@ -25,6 +25,9 @@ import com.sinch.android.rtc.messaging.MessageDeliveryInfo;
 import com.sinch.android.rtc.messaging.MessageFailureInfo;
 import com.sinch.android.rtc.messaging.WritableMessage;
 
+import java.util.Arrays;
+import java.util.List;
+
 import ca.chirp.chirpmessenger.R;
 
 public class MessagingActivity extends Activity{
@@ -36,8 +39,8 @@ public class MessagingActivity extends Activity{
     private MessageAdapter messageAdapter;
     private ListView messagesList;
     private String currentUserId;
-    //private ServiceConnection serviceConnection = new MyServiceConnection();
-    //private MessageClientListener messageClientListener = new MyMessageClientListener();
+    private ServiceConnection serviceConnection = new MyServiceConnection();
+    private MessageClientListener messageClientListener = new MyMessageClientListener();
 
     private Firebase fireRef;
     private AuthData authData;
@@ -51,7 +54,7 @@ public class MessagingActivity extends Activity{
         fireRef = MainDAO.getInstance().getFirebase();
         setContentView(R.layout.messaging);
 
-        //bindService(new Intent(this, MessageService.class), serviceConnection, BIND_AUTO_CREATE);
+        bindService(new Intent(this, MessageService.class), serviceConnection, BIND_AUTO_CREATE);
 
         Intent intent = getIntent();
         recipientId = intent.getStringExtra("RECIPIENT_ID");
@@ -93,17 +96,71 @@ public class MessagingActivity extends Activity{
 
     // Get previous messages from Firebase to display
     private void populateMessageHistory() {
+        String[] userIds = {currentUserId, recipientId};
 
     }
 
     private void sendMessage() {
+        messageBody = messageBodyField.getText().toString();
+        if (messageBody.isEmpty()) {
+            Toast.makeText(this, "Please enter a message", Toast.LENGTH_LONG).show();
+            return;
+        }
 
+        messageService.sendMessage(recipientId, messageBody);
+        messageBodyField.setText("");
     }
 
     @Override
     public void onDestroy() {
-        //messageService.removeMessageClientListener(messageClientListener);
-        //unbindService(serviceConnection);
+        messageService.removeMessageClientListener(messageClientListener);
+        unbindService(serviceConnection);
         super.onDestroy();
+    }
+
+    private class MyServiceConnection implements ServiceConnection {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            messageService = (MessageService.MessageServiceInterface) iBinder;
+            messageService.addMessageClientListener(messageClientListener);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            messageService = null;
+        }
+    }
+
+    private class MyMessageClientListener implements MessageClientListener {
+        @Override
+        public void onMessageFailed(MessageClient client, Message message,
+                                    MessageFailureInfo failureInfo) {
+            Toast.makeText(MessagingActivity.this, "Message failed to send.", Toast.LENGTH_LONG).show();
+        }
+
+        @Override
+        public void onIncomingMessage(MessageClient client, final Message message) {
+            if (message.getSenderId().equals(recipientId)) {
+                final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
+
+                // Only add message to firebase database if it doesn't already exist there
+
+            }
+        }
+
+        @Override
+        public void onMessageSent(MessageClient client, Message message, String recipientId) {
+
+
+
+            final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
+            messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_OUTGOING);
+        }
+
+        @Override
+        public void onMessageDelivered(MessageClient client, MessageDeliveryInfo deliveryInfo) {}
+
+        @Override
+        public void onShouldSendPushData(MessageClient client, Message message, List<PushPair> pushPairs) {}
     }
 }
