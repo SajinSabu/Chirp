@@ -47,7 +47,7 @@
                     android:paddingLeft="12dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/chirp_blue"
                     android:textSize="14sp"
                     android:text="Hello"
                     />

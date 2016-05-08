@@ -38,18 +38,22 @@
                 android:textSize="14sp"
                 android:textColor="@android:color/black"
                 android:layout_marginRight="10dp"
-                android:layout_alignTop="@+id/btnSend"
+                android:layout_alignTop="@+id/sendButton"
                 android:background="@android:color/white"
-                android:layout_alignBottom="@+id/btnSend"
-                android:layout_toLeftOf="@+id/btnSend"/>
+                android:layout_alignBottom="@+id/sendButton"
+                android:layout_toLeftOf="@+id/sendButton"/>
 
         <Button
-                android:id="@+id/sendButton"
-                android:layout_width="72dp"
-                android:layout_height="match_parent"
-                android:layout_alignParentRight="true"
-                android:layout_margin="4dp"
-                android:background="@drawable/button_send" />
+            android:layout_width="72dp"
+            android:layout_height="match_parent"
+            android:layout_alignParentRight="true"
+            android:layout_margin="4dp"
+            android:text="SEND"
+            android:id="@+id/sendButton"
+            android:background="@color/chirp_blue"
+            android:padding="8dp"
+            android:textColor="#ffffff"
+            android:textSize="18sp" />
     </RelativeLayout>
 
 
