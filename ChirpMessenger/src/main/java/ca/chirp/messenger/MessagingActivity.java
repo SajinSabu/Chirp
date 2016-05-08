@@ -144,6 +144,7 @@ public class MessagingActivity extends Activity{
                 final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
 
                 // Only add message to firebase database if it doesn't already exist there
+                messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_INCOMING);
 
             }
         }
