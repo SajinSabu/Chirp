@@ -13,9 +13,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.firebase.client.AuthData;
+import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
+import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.messaging.Message;
@@ -25,8 +27,10 @@ import com.sinch.android.rtc.messaging.MessageDeliveryInfo;
 import com.sinch.android.rtc.messaging.MessageFailureInfo;
 import com.sinch.android.rtc.messaging.WritableMessage;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import ca.chirp.chirpmessenger.R;
 
@@ -41,10 +45,12 @@ public class MessagingActivity extends Activity{
     private String currentUserId;
     private ServiceConnection serviceConnection = new MyServiceConnection();
     private MessageClientListener messageClientListener = new MyMessageClientListener();
+    private ArrayList<String> chatList;
 
     private Firebase fireRef;
     private AuthData authData;
     private UserDAO userDAO;
+    private ArrayList<String> previousChatMessages;
 
     private static String LOG_TAG = "MESSAGE_ACTIVITY";
 
@@ -96,7 +102,43 @@ public class MessagingActivity extends Activity{
 
     // Get previous messages from Firebase to display
     private void populateMessageHistory() {
-        String[] userIds = {currentUserId, recipientId};
+        final String[] userIds = {currentUserId, recipientId};
+
+        fireRef.child("chat").addChildEventListener(new ChildEventListener() {
+            // Retrieve new posts as they are added to Firebase
+            // Limit the query elements to what we want
+            @Override
+            public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
+
+                Map<String, Object> previousMessage = (Map<String, Object>) snapshot.getValue();
+                previousMessage.get(Arrays.asList(userIds).contains("senderId"));
+                previousMessage.get(Arrays.asList(userIds).contains("recipientId"));
+
+                for (Map.Entry<String, Object> messageList : previousMessage.entrySet()){
+                    WritableMessage messages = new WritableMessage(messageList.getKey().toString(), messageList.getValue().toString());
+                    Log.e(LOG_TAG, "Got Actual Text " + messages);
+                }
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot snapshot, String previousChildKey) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+            }
+        });
 
     }
 
@@ -142,19 +184,23 @@ public class MessagingActivity extends Activity{
         public void onIncomingMessage(MessageClient client, final Message message) {
             if (message.getSenderId().equals(recipientId)) {
                 final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
-
-                // Only add message to firebase database if it doesn't already exist there
                 messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_INCOMING);
-
             }
         }
 
         @Override
         public void onMessageSent(MessageClient client, Message message, String recipientId) {
-
-
-
             final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
+
+            previousChatMessages = new ArrayList<String>();
+
+            // Only add message to firebase database if it doesn't already exist there
+            Firebase chatRef = fireRef.child("chat").child(message.getMessageId());
+            chatRef.child("senderId").setValue(currentUserId);
+            chatRef.child("recipientId").setValue(writableMessage.getRecipientIds().get(0));
+            chatRef.child("messageText").setValue(writableMessage.getTextBody());
+            chatRef.child("sinchId").setValue(message.getMessageId());
+            
             messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_OUTGOING);
         }
 
