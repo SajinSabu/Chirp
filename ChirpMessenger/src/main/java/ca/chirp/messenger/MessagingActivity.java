@@ -104,39 +104,30 @@ public class MessagingActivity extends Activity{
     private void populateMessageHistory() {
         final String[] userIds = {currentUserId, recipientId};
 
-        fireRef.child("chat").addChildEventListener(new ChildEventListener() {
-            // Retrieve new posts as they are added to Firebase
-            // Limit the query elements to what we want
+        Query chatQuery = fireRef.child("chat");
+        // Check the senderId to see if it is the correct sender for the conversation
+        chatQuery.orderByChild("senderId").startAt(Arrays.asList(userIds).contains("senderId")).endAt(Arrays.asList(userIds).contains("senderId"));
+
+        chatQuery.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot snapshot, String previousChildKey) {
-
-                Map<String, Object> previousMessage = (Map<String, Object>) snapshot.getValue();
-                previousMessage.get(Arrays.asList(userIds).contains("senderId"));
-                previousMessage.get(Arrays.asList(userIds).contains("recipientId"));
-
-                for (Map.Entry<String, Object> messageList : previousMessage.entrySet()){
-                    WritableMessage messages = new WritableMessage(messageList.getKey().toString(), messageList.getValue().toString());
-                    Log.e(LOG_TAG, "Got Actual Text " + messages);
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
+                    Log.e(LOG_TAG, "Empty? " + userSnapshot.getValue(ChatModel.class).getRecipientId());
+                    // Check the recipientId to see if it is the correct recipient for the conversation
+                    if (Arrays.asList(userIds).contains(userSnapshot.getValue(ChatModel.class).getRecipientId())){
+                        WritableMessage message = new WritableMessage(userSnapshot.getValue(ChatModel.class).getRecipientId(), userSnapshot.getValue(ChatModel.class).getMessageText());
+                        if (userSnapshot.getValue(ChatModel.class).getSenderId().equals(currentUserId)) {
+                            messageAdapter.addMessage(message, MessageAdapter.DIRECTION_OUTGOING);
+                        } else {
+                            messageAdapter.addMessage(message, MessageAdapter.DIRECTION_INCOMING);
+                        }
+                    }
                 }
             }
 
             @Override
-            public void onChildChanged(DataSnapshot snapshot, String previousChildKey) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot snapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
             public void onCancelled(FirebaseError firebaseError) {
+
             }
         });
 
@@ -200,7 +191,7 @@ public class MessagingActivity extends Activity{
             chatRef.child("recipientId").setValue(writableMessage.getRecipientIds().get(0));
             chatRef.child("messageText").setValue(writableMessage.getTextBody());
             chatRef.child("sinchId").setValue(message.getMessageId());
-            
+
             messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_OUTGOING);
         }
 
