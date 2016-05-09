@@ -29,5 +29,5 @@ dependencies {
     compile 'com.firebase:firebase-client-android:2.5.2+'
     compile 'com.firebaseui:firebase-ui:0.3.1'
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile files('C:/Users/Johnnie/Desktop/Other Projects/Chirp/libs/sinch-android-rtc-3.9.4.jar')
+    compile files('../libs/sinch-android-rtc-3.9.4.jar')
 }
