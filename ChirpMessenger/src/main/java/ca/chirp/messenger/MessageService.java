@@ -23,8 +23,8 @@ import com.sinch.android.rtc.messaging.WritableMessage;
 import com.firebase.client.AuthData;
 
 public class MessageService extends Service implements SinchClientListener {
-    private static final String APP_KEY = "23784437-3d2c-47d3-8a62-1b4ff54a544e";
-    private static final String APP_SECRET = "B8FnCZ6OCUSyA6LAPx8+Aw==";
+    private static final String APP_KEY = "e5474037-95f0-4c9d-bd52-a053f0a0c718";
+    private static final String APP_SECRET = "+ndQULG7sEakFx6jFwkqMA==";
     private static final String ENVIRONMENT = "sandbox.sinch.com";
     private final MessageServiceInterface serviceInterface = new MessageServiceInterface();
     private SinchClient sinchClient = null;

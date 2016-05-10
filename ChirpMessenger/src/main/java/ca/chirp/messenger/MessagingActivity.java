@@ -51,6 +51,7 @@ public class MessagingActivity extends Activity{
     private AuthData authData;
     private UserDAO userDAO;
     private static String[] userIds;
+    private Query chatQuery;
 
     private static String LOG_TAG = "MESSAGE_ACTIVITY";
 
@@ -64,27 +65,6 @@ public class MessagingActivity extends Activity{
 
         Intent intent = getIntent();
         recipientId = intent.getStringExtra("RECIPIENT_ID");
-
-        userDAO = new UserDAO();
-        authData = fireRef.getAuth();
-
-        // Get the current user id from Firebase
-        Firebase userRef = userDAO.getUserRef(authData.getUid());
-
-        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // Check if there is data at the database location
-                if (dataSnapshot.exists()) {
-                    currentUserId = dataSnapshot.getValue(UserModel.class).getEmail();
-                    Log.e(LOG_TAG, "currentUserId " + currentUserId);
-                }
-            }
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-                Log.e(LOG_TAG, "Error trying to get current user data" + firebaseError.getMessage());
-            }
-        });
 
         messagesList = (ListView) findViewById(R.id.listMessages);
         messageAdapter = new MessageAdapter(this);
@@ -103,20 +83,36 @@ public class MessagingActivity extends Activity{
 
     // Get previous messages from Firebase to display
     private void populateMessageHistory() {
-        userIds = new String[] {currentUserId, recipientId};
-        Log.e(LOG_TAG, "What is in userIds? " + Arrays.toString(userIds));
+        userDAO = new UserDAO();
+        authData = fireRef.getAuth();
+        chatQuery = fireRef.child("chat");
 
-        Query chatQuery = fireRef.child("chat");
-        // Check the senderId to see if it is the correct sender for the conversation
-        chatQuery.orderByChild("senderId").startAt(Arrays.asList(userIds).contains("senderId")).endAt(Arrays.asList(userIds).contains("senderId"));
+        // Get the current user id from Firebase
+        Firebase userRef = userDAO.getUserRef(authData.getUid());
+
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // Check if there is data at the database location
+                if (dataSnapshot.exists()) {
+                    currentUserId = dataSnapshot.getValue(UserModel.class).getEmail();
+                    userIds = new String[] {currentUserId, recipientId};
+                    // Check the senderId to see if it is the correct sender for the conversation
+                    chatQuery.orderByChild("senderId").startAt(currentUserId).endAt(currentUserId+"\uf8ff");
+                }
+            }
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+                Log.e(LOG_TAG, "Error trying to get current user data" + firebaseError.getMessage());
+            }
+        });
 
         chatQuery.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
-                    Log.e(LOG_TAG, "Empty? " + userSnapshot.getValue(ChatModel.class).getRecipientId());
                     // Check the recipientId to see if it is the correct recipient for the conversation
-                    if (Arrays.asList(userIds).contains(userSnapshot.getValue(ChatModel.class).getRecipientId())){
+                    if (Arrays.asList(userIds).contains(userSnapshot.getValue(ChatModel.class).getSenderId()) && Arrays.asList(userIds).contains(userSnapshot.getValue(ChatModel.class).getRecipientId())) {
                         Log.e(LOG_TAG, "Get old messages " + userSnapshot.getValue(ChatModel.class).getRecipientId());
                         WritableMessage message = new WritableMessage(userSnapshot.getValue(ChatModel.class).getRecipientId(), userSnapshot.getValue(ChatModel.class).getMessageText());
                         if (userSnapshot.getValue(ChatModel.class).getSenderId().equals(currentUserId)) {
@@ -178,15 +174,7 @@ public class MessagingActivity extends Activity{
             if (message.getSenderId().equals(recipientId)) {
                 final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
 
-                Map<String, String> chatMessages = new HashMap<String, String>();
-                chatMessages.put("senderId", currentUserId);
-                chatMessages.put("recipientId", writableMessage.getRecipientIds().get(0));
-                chatMessages.put("messageText", writableMessage.getTextBody());
-                chatMessages.put("sinchId", message.getMessageId());
 
-                // Only add message to firebase database if it doesn't already exist there
-                Firebase chatRef = fireRef.child("chat");
-                chatRef.push().setValue(chatMessages);
 
                 messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_INCOMING);
             }
@@ -195,6 +183,17 @@ public class MessagingActivity extends Activity{
         @Override
         public void onMessageSent(MessageClient client, Message message, String recipientId) {
             final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
+
+            Map<String, String> chatMessages = new HashMap<String, String>();
+            chatMessages.put("senderId", currentUserId);
+            chatMessages.put("recipientId", writableMessage.getRecipientIds().get(0));
+            chatMessages.put("messageText", writableMessage.getTextBody());
+            chatMessages.put("sinchId", message.getMessageId());
+
+            // Only add message to firebase database if it doesn't already exist there
+            Firebase chatRef = fireRef.child("chat");
+            chatRef.push().setValue(chatMessages);
+
             messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_OUTGOING);
         }
 
