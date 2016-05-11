@@ -173,9 +173,6 @@ public class MessagingActivity extends Activity{
         public void onIncomingMessage(MessageClient client, final Message message) {
             if (message.getSenderId().equals(recipientId)) {
                 final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
-
-
-
                 messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_INCOMING);
             }
         }

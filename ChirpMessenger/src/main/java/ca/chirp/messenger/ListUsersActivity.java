@@ -1,9 +1,11 @@
 package ca.chirp.messenger;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -15,6 +17,9 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import com.firebase.client.AuthData;
 import com.firebase.client.ChildEventListener;
@@ -66,6 +71,77 @@ public class ListUsersActivity extends Activity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_start_new:
+                openGroupDialog();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void showGroupDialog(String[] usernameList, final String[] ids, Activity contextActivity) {
+        final ArrayList<Integer> selectedItems = new ArrayList();  // Where we track the selected items
+        AlertDialog.Builder builder = new AlertDialog.Builder(contextActivity);
+        // Set the dialog title
+        builder.setTitle("Pick the users in the conversation")
+                // Specify the list array, the items to be selected by default (null for none),
+                // and the listener through which to receive callbacks when items are selected
+                .setMultiChoiceItems(usernameList, null,
+                        new DialogInterface.OnMultiChoiceClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which,
+                                                boolean isChecked) {
+                                if (isChecked) {
+                                    // If the user checked the item, add it to the selected items
+                                    selectedItems.add(which);
+                                } else if (selectedItems.contains(which)) {
+                                    // Else, if the item is already in the array, remove it
+                                    selectedItems.remove(Integer.valueOf(which));
+                                }
+                            }
+                        })
+                // Set the action buttons
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        ArrayList<String> selectedIds = new ArrayList<String>();
+                        for (int pos : selectedItems) {
+                            selectedIds.add(ids[pos]);
+                        }
+                        openGroupConversation(selectedIds);
+                    }
+                })
+                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+
+        builder.create().show();
+    }
+
+    // TODO
+    private void openGroupDialog() {
+        final ArrayList<String> nameOptions = new ArrayList<String>();
+        final ArrayList<String> ids = new ArrayList<String>();
+        final Activity context = this;
+
+    }
+
+    // TODO
+    // Add group chat to conversation list
     private void setConversationsList() {
         userDAO = new UserDAO();
         authData = myFirebaseRef.getAuth();
@@ -160,6 +236,11 @@ public class ListUsersActivity extends Activity {
                 Log.e("The read failed: " ,firebaseError.getMessage());
             }
         });
+    }
+
+    // Open conversation with group
+    public void openGroupConversation(ArrayList<String> selectedIds) {
+        String recipientString = "";
     }
 
     //show a loading spinner while the sinch client starts

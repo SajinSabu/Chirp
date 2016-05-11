@@ -17,6 +17,14 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="SIGN UP"
+            android:layout_gravity="center_horizontal"
+            android:textColor="@color/chirp_blue"
+            android:textSize="40sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop="30dp"
             android:text="@string/username"
             android:id="@+id/nameLabel"
