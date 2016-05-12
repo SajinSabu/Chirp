@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="app_name">Chirp Messenger</string>
-    <string name="login_activity_label">Chirp Messaging</string>
+    <string name="app_name">Chirp</string>
+    <string name="login_activity_label">Chirp</string>
     <string name="username">USERNAME</string>
     <string name="password">PASSWORD</string>
     <string name="email">EMAIL</string>
@@ -10,7 +10,7 @@
     <string name="logout">LOGOUT</string>
     <string name="message_elipses">Message...</string>
 
-    <string name="title_activity_signup">SignupActivity</string>
+    <string name="title_activity_signup">Signup</string>
 
     <string name="firebase_url">https://luminous-inferno-7577.firebaseio.com</string>
 

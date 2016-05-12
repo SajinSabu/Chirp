@@ -6,14 +6,16 @@ public class ChatModel {
     private String recipientId;
     private String messageText;
     private String sinchId;
+    private String timeSent;
 
     public ChatModel() {}
 
-    public ChatModel(String senderId, String recipientId, String messageText, String sinchId) {
+    public ChatModel(String senderId, String recipientId, String messageText, String sinchId, String timeSent) {
         this.senderId = senderId;
         this.recipientId = recipientId;
         this.messageText = messageText;
         this.sinchId = sinchId;
+        this.timeSent = timeSent;
     }
 
     public String getSenderId() {
@@ -46,5 +48,13 @@ public class ChatModel {
 
     public void setSinchId(String sinchId) {
         this.sinchId = sinchId;
+    }
+
+    public String getTimeSent() {
+        return timeSent;
+    }
+
+    public void setTimeSent(String timeSent) {
+        this.timeSent = timeSent;
     }
 }

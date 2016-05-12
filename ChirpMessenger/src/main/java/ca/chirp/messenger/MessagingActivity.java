@@ -13,7 +13,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.firebase.client.AuthData;
-import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -27,10 +26,13 @@ import com.sinch.android.rtc.messaging.MessageDeliveryInfo;
 import com.sinch.android.rtc.messaging.MessageFailureInfo;
 import com.sinch.android.rtc.messaging.WritableMessage;
 
-import java.util.ArrayList;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import ca.chirp.chirpmessenger.R;
@@ -180,11 +182,14 @@ public class MessagingActivity extends Activity{
         public void onMessageSent(MessageClient client, Message message, String recipientId) {
             final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
 
+            DateFormat df = new SimpleDateFormat("h:mm a", Locale.CANADA);
+            String time = df.format(Calendar.getInstance().getTime());
             Map<String, String> chatMessages = new HashMap<String, String>();
             chatMessages.put("senderId", currentUserId);
             chatMessages.put("recipientId", writableMessage.getRecipientIds().get(0));
             chatMessages.put("messageText", writableMessage.getTextBody());
             chatMessages.put("sinchId", message.getMessageId());
+            chatMessages.put("timeSent", time);
 
             // Only add message to firebase database if it doesn't already exist there
             Firebase chatRef = fireRef.child("chat");

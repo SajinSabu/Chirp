@@ -37,6 +37,7 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.getActionBar().hide();
 
         intent = new Intent(getApplicationContext(), ListUsersActivity.class);
         serviceIntent = new Intent(getApplicationContext(), MessageService.class);
