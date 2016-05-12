@@ -113,12 +113,11 @@ public class MessagingActivity extends Activity{
                 for (DataSnapshot userSnapshot: dataSnapshot.getChildren()) {
                     // Check the recipientId to see if it is the correct recipient for the conversation
                     if (Arrays.asList(userIds).contains(userSnapshot.getValue(ChatModel.class).getSenderId()) && Arrays.asList(userIds).contains(userSnapshot.getValue(ChatModel.class).getRecipientId())) {
-                        Log.e(LOG_TAG, "Get old messages " + userSnapshot.getValue(ChatModel.class).getRecipientId());
                         WritableMessage message = new WritableMessage(userSnapshot.getValue(ChatModel.class).getRecipientId(), userSnapshot.getValue(ChatModel.class).getMessageText());
                         if (userSnapshot.getValue(ChatModel.class).getSenderId().equals(currentUserId)) {
-                            messageAdapter.addMessage(message, MessageAdapter.DIRECTION_OUTGOING);
+                            messageAdapter.addMessage(message, MessageAdapter.DIRECTION_OUTGOING, "Me");
                         } else {
-                            messageAdapter.addMessage(message, MessageAdapter.DIRECTION_INCOMING);
+                            messageAdapter.addMessage(message, MessageAdapter.DIRECTION_INCOMING, userSnapshot.getValue(ChatModel.class).getSenderId());
                         }
                     }
                 }
@@ -173,7 +172,7 @@ public class MessagingActivity extends Activity{
         public void onIncomingMessage(MessageClient client, final Message message) {
             if (message.getSenderId().equals(recipientId)) {
                 final WritableMessage writableMessage = new WritableMessage(message.getRecipientIds().get(0), message.getTextBody());
-                messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_INCOMING);
+                messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_INCOMING, message.getSenderId());
             }
         }
 
@@ -191,7 +190,7 @@ public class MessagingActivity extends Activity{
             Firebase chatRef = fireRef.child("chat");
             chatRef.push().setValue(chatMessages);
 
-            messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_OUTGOING);
+            messageAdapter.addMessage(writableMessage, MessageAdapter.DIRECTION_OUTGOING, "Me");
         }
 
         @Override

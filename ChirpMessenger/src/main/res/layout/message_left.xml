@@ -19,7 +19,7 @@
                 android:layout_alignParentLeft="true"
                 android:paddingLeft="10dp"
                 android:paddingBottom="6dp"
-                android:textColor="@android:color/black" android:textStyle="bold"/>
+                android:textColor="@color/light_gray"/>
 
         <TextView
                 android:id="@+id/txtDate"

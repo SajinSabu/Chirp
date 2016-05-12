@@ -1,6 +1,7 @@
 package ca.chirp.messenger;
 
 import android.app.Activity;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,15 +22,18 @@ public class MessageAdapter extends BaseAdapter {
     public static final int DIRECTION_OUTGOING = 1;
 
     private List<Pair<WritableMessage, Integer>> messages;
+    private List<String> senderId;
     private LayoutInflater layoutInflater;
 
     public MessageAdapter(Activity activity) {
         layoutInflater = activity.getLayoutInflater();
         messages = new ArrayList<Pair<WritableMessage, Integer>>();
+        senderId = new ArrayList<String>();
     }
 
-    public void addMessage(WritableMessage message, int direction) {
+    public void addMessage(WritableMessage message, int direction, String userId) {
         messages.add(new Pair(message, direction));
+        senderId.add(userId);
         notifyDataSetChanged();
     }
 
@@ -75,9 +79,13 @@ public class MessageAdapter extends BaseAdapter {
         }
 
         WritableMessage message = messages.get(i).first;
+        String sender = senderId.get(i);
 
         TextView txtMessage = (TextView) convertView.findViewById(R.id.txtMessage);
         txtMessage.setText(message.getTextBody());
+
+        TextView txtSender = (TextView) convertView.findViewById(R.id.txtSender);
+        txtSender.setText(sender);
 
         return convertView;
     }
