@@ -81,9 +81,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_start_new:
                 openGroupDialog();
@@ -93,23 +90,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void openNewDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select type of conversation")
-                .setItems(new String[]{"Group", "Individual"}, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0) {
-                            openGroupDialog();
-                        }
-                    }
-                });
-        builder.create().show();
-    }
-
     private void showGroupDialog(String[] usernameList, final String[] ids, Activity contextActivity) {
         final ArrayList<Integer> selectedItems = new ArrayList();
         AlertDialog.Builder builder = new AlertDialog.Builder(contextActivity);
-        builder.setTitle("Select the users to chat with")
+        builder.setTitle("Select users to start a group chat.")
                 .setMultiChoiceItems(usernameList, null,
                         new DialogInterface.OnMultiChoiceClickListener() {
                             @Override
@@ -129,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
                         for (int pos : selectedItems) {
                             selectedIds.add(ids[pos]);
                         }
-                        //openGroupConversation(selectedIds);
+                        ListChatActivity lca = new ListChatActivity();
+                        lca.openGroupConversation(selectedIds);
                     }
                 })
                 .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
