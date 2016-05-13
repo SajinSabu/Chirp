@@ -175,11 +175,6 @@ public class ListUsersActivity extends Fragment {
         });
     }
 
-    // Open conversation with group
-    public void openGroupConversation(ArrayList<String> selectedIds) {
-        String recipientString = "";
-    }
-
     //show a loading spinner while the sinch client starts
     private void showSpinner() {
         progressDialog = new ProgressDialog(getActivity());
