@@ -36,12 +36,10 @@ public class ListUsersActivity extends Fragment {
     private ArrayList<String> names;
     private View userView;
     private View ListUserView;
-    private Button logoutButton;
     private ProgressDialog progressDialog;
     private BroadcastReceiver receiver = null;
 
     private Firebase myFirebaseRef;
-    private AuthData authData;
     private UserDAO userDAO;
 
     private static String LOG_TAG = "LIST_USERS";
@@ -59,17 +57,6 @@ public class ListUsersActivity extends Fragment {
 
         ListUserView = getActivity().getLayoutInflater().inflate(R.layout.activity_list_users, null);
         userView = ListUserView;
-        logoutButton = (Button) ListUserView.findViewById(R.id.logoutButton);
-        logoutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getActivity().stopService(new Intent(getActivity(), MessageService.class));
-                // Logout
-                myFirebaseRef.unauth();
-                Intent intent = new Intent(getActivity(), LoginActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 
     @Override
@@ -81,7 +68,7 @@ public class ListUsersActivity extends Fragment {
     // Add group chat to conversation list
     private void setConversationsList() {
         userDAO = new UserDAO();
-        authData = myFirebaseRef.getAuth();
+        AuthData authData = myFirebaseRef.getAuth();
 
         // Get the current user id from Firebase
         Firebase userRef = userDAO.getUserRef(authData.getUid());
@@ -112,10 +99,8 @@ public class ListUsersActivity extends Fragment {
                 Log.e(LOG_TAG, "Count " + snapshot.getChildrenCount());
                 for (DataSnapshot userSnapshot: snapshot.getChildren()) {
                     String s = userSnapshot.getValue(UserModel.class).getEmail();
-                    if (s.equals(currentUserId)){
+                    if (!s.equals(currentUserId)){
                         // Don't add to list
-                    }
-                    else {
                         names.add(s);
                     }
                 }

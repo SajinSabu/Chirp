@@ -2,6 +2,7 @@ package ca.chirp.messenger;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
@@ -85,6 +86,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_start_new:
                 openGroupDialog();
                 return true;
+            case R.id.action_logout:
+                stopService(new Intent(getApplicationContext(), MessageService.class));
+                // Logout
+                myFirebaseRef.unauth();
+                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                startActivity(intent);
             default:
                 return super.onOptionsItemSelected(item);
         }

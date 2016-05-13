@@ -35,7 +35,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="@string/message_elipses"
-                android:textSize="14sp"
+                android:textSize="18sp"
                 android:textColor="@android:color/black"
                 android:layout_marginRight="10dp"
                 android:layout_alignTop="@+id/sendButton"
