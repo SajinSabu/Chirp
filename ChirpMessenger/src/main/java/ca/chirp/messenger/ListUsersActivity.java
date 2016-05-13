@@ -1,28 +1,24 @@
 package ca.chirp.messenger;
 
-import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 
 import com.firebase.client.AuthData;
-import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
@@ -30,16 +26,16 @@ import com.firebase.client.Query;
 import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import ca.chirp.chirpmessenger.R;
 
-public class ListUsersActivity extends Activity {
+public class ListUsersActivity extends Fragment {
 
     private String currentUserId;
     private ArrayAdapter<String> namesArrayAdapter;
     private ArrayList<String> names;
-    private ListView usersListView;
+    private View userView;
+    private View ListUserView;
     private Button logoutButton;
     private ProgressDialog progressDialog;
     private BroadcastReceiver receiver = null;
@@ -50,94 +46,35 @@ public class ListUsersActivity extends Activity {
 
     private static String LOG_TAG = "LIST_USERS";
 
+    public ListUsersActivity(){
+        // Required empty public constructor
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         myFirebaseRef = MainDAO.getInstance().getFirebase();
-        setContentView(R.layout.activity_list_users);
 
         showSpinner();
 
-        logoutButton = (Button) findViewById(R.id.logoutButton);
+        ListUserView = getActivity().getLayoutInflater().inflate(R.layout.activity_list_users, null);
+        userView = ListUserView;
+        logoutButton = (Button) ListUserView.findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                stopService(new Intent(getApplicationContext(), MessageService.class));
+                getActivity().stopService(new Intent(getActivity(), MessageService.class));
                 // Logout
                 myFirebaseRef.unauth();
-                Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
                 startActivity(intent);
             }
         });
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
-        switch (item.getItemId()) {
-            case R.id.action_start_new:
-                openGroupDialog();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void showGroupDialog(String[] usernameList, final String[] ids, Activity contextActivity) {
-        final ArrayList<Integer> selectedItems = new ArrayList();  // Where we track the selected items
-        AlertDialog.Builder builder = new AlertDialog.Builder(contextActivity);
-        // Set the dialog title
-        builder.setTitle("Pick the users in the conversation")
-                // Specify the list array, the items to be selected by default (null for none),
-                // and the listener through which to receive callbacks when items are selected
-                .setMultiChoiceItems(usernameList, null,
-                        new DialogInterface.OnMultiChoiceClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which,
-                                                boolean isChecked) {
-                                if (isChecked) {
-                                    // If the user checked the item, add it to the selected items
-                                    selectedItems.add(which);
-                                } else if (selectedItems.contains(which)) {
-                                    // Else, if the item is already in the array, remove it
-                                    selectedItems.remove(Integer.valueOf(which));
-                                }
-                            }
-                        })
-                // Set the action buttons
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        ArrayList<String> selectedIds = new ArrayList<String>();
-                        for (int pos : selectedItems) {
-                            selectedIds.add(ids[pos]);
-                        }
-                        openGroupConversation(selectedIds);
-                    }
-                })
-                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                    }
-                });
-
-        builder.create().show();
-    }
-
-    // TODO
-    private void openGroupDialog() {
-        final ArrayList<String> nameOptions = new ArrayList<String>();
-        final ArrayList<String> ids = new ArrayList<String>();
-        final Activity context = this;
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return ListUserView;
     }
 
     // TODO
@@ -183,9 +120,9 @@ public class ListUsersActivity extends Activity {
                     }
                 }
 
-                usersListView = (ListView)findViewById(R.id.usersListView);
+                ListView usersListView = (ListView) userView.findViewById(R.id.usersListView);
                 namesArrayAdapter =
-                        new ArrayAdapter<String>(getApplicationContext(),
+                        new ArrayAdapter<String>(getActivity(),
                                 R.layout.user_list_item, names);
                 usersListView.setAdapter(namesArrayAdapter);
 
@@ -221,12 +158,12 @@ public class ListUsersActivity extends Activity {
                     //String s = snapshot.getValue(UserModel.class).getEmail();
                     Log.e(LOG_TAG, "Name of userSnapshot " + userSelected);
                     if (userSelected.equals(userSelected)){
-                        Intent intent = new Intent(getApplicationContext(), MessagingActivity.class);
+                        Intent intent = new Intent(getActivity(), MessagingActivity.class);
                         intent.putExtra("RECIPIENT_ID", userSelected);
                         startActivity(intent);
                     }
                     else {
-                        Toast.makeText(getApplicationContext(),
+                        Toast.makeText(getActivity(),
                                 "Error finding that user",
                                 Toast.LENGTH_SHORT).show();
                     }
@@ -245,7 +182,7 @@ public class ListUsersActivity extends Activity {
 
     //show a loading spinner while the sinch client starts
     private void showSpinner() {
-        progressDialog = new ProgressDialog(this);
+        progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle("Loading");
         progressDialog.setMessage("Please wait...");
         progressDialog.show();
@@ -256,22 +193,17 @@ public class ListUsersActivity extends Activity {
                 Boolean success = intent.getBooleanExtra("success", false);
                 progressDialog.dismiss();
                 if (!success) {
-                    Toast.makeText(getApplicationContext(), "Messaging service failed to start", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getActivity(), "Messaging service failed to start", Toast.LENGTH_LONG).show();
                 }
             }
         };
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(receiver, new IntentFilter("ca.chirp.messenger.ListUsersActivity"));
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(receiver, new IntentFilter("ca.chirp.messenger.ListUsersActivity"));
     }
 
     @Override
     public void onResume() {
         setConversationsList();
         super.onResume();
-    }
-
-    @Override
-    public void onBackPressed() {
-        moveTaskToBack(true);
     }
 }

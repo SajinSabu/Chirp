@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ca.chirp.messenger.ListUsersActivity"
     android:layout_width="fill_parent"
@@ -10,6 +10,7 @@
         android:layout_height="wrap_content"
         android:text="@string/logout"
         android:id="@+id/logoutButton"
+        android:layout_below="@+id/tool_bar"
         android:gravity="center_vertical|center_horizontal"
         android:layout_gravity="center_horizontal"
         android:background="@color/dark_gray"
@@ -18,6 +19,7 @@
         android:textColor="@color/chirp_blue" />
 
     <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_below="@+id/logoutButton"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="16dp"
@@ -25,4 +27,4 @@
         android:id="@+id/usersListView">
     </ListView>
 
-</LinearLayout>
+</RelativeLayout>

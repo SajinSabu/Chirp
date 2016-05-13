@@ -31,7 +31,6 @@ public class SignupActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.getActionBar().hide();
         setContentView(R.layout.activity_signup);
 
         intent = new Intent(getApplicationContext(), LoginActivity.class);

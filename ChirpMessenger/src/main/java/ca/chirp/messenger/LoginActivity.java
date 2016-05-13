@@ -37,9 +37,8 @@ public class LoginActivity extends Activity implements View.OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.getActionBar().hide();
 
-        intent = new Intent(getApplicationContext(), ListUsersActivity.class);
+        intent = new Intent(getApplicationContext(), MainActivity.class);
         serviceIntent = new Intent(getApplicationContext(), MessageService.class);
         signupIntent = new Intent(getApplicationContext(), SignupActivity.class);
         chirpFirebaseRef = MainDAO.getInstance().getFirebase();

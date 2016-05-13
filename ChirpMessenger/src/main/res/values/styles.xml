@@ -2,8 +2,17 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="AppToolbar" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:textColorPrimary">@android:color/white</item>
+        <item name="android:textColorSecondary">@android:color/white</item>
+        <item name="android:itemTextAppearance">@style/menuItemColor</item>
+    </style>
+
+    <style name="menuItemColor">
+        <item name="android:textColor">@color/chirp_blue</item>
+    </style>
 </resources>
